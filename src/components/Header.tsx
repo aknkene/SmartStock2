@@ -65,22 +65,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3 lg:gap-5">
-        {/* Environment Mode Toggle */}
-        <div className="hidden sm:flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-          <button
-            onClick={() => setMode('DEMO')}
-            className={cn("px-2.5 py-0.5 text-xs font-semibold rounded-md transition-all", mode === 'DEMO' ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-700")}
-          >
-            Demo
-          </button>
-          <button
-            onClick={() => setMode('PRODUCTION')}
-            className={cn("px-2.5 py-0.5 text-xs font-semibold rounded-md transition-all", mode === 'PRODUCTION' ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-700")}
-          >
-            Production
-          </button>
-        </div>
-
         {/* Language Toggle */}
         <button 
           onClick={() => setLanguage(language === 'TH' ? 'EN' : 'TH')}

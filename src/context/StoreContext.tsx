@@ -48,10 +48,10 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<AppMode>('DEMO');
+  const [mode, setMode] = useState<AppMode>('PRODUCTION');
   const [language, setLanguage] = useState<Language>('TH');
-  const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[0]);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   
   // Storage for Demo mode
   const [demoUsers, setDemoUsers] = useState<User[]>(mockUsers);
@@ -62,9 +62,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [semesters, setSemesters] = useState<Semester[]>(mockSemesters);
   
   // Storage for Production mode (Empty initially, meant to be fetched from Google Sheets / Backend)
-  const [prodUsers, setProdUsers] = useState<User[]>([]);
-  const [prodStudents, setProdStudents] = useState<Student[]>([]);
-  const [prodProducts, setProdProducts] = useState<Product[]>([]);
+  const [prodUsers, setProdUsers] = useState<User[]>(mockUsers);
+  const [prodStudents, setProdStudents] = useState<Student[]>(mockStudents);
+  const [prodProducts, setProdProducts] = useState<Product[]>(mockProducts);
   const [prodTransactions, setProdTransactions] = useState<Transaction[]>([]);
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
