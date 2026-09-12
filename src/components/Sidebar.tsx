@@ -4,7 +4,8 @@ import {
   Package, 
   ShoppingBag, 
   BarChart3, 
-  Settings 
+  Settings,
+  CalendarDays
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useStore } from '../context/StoreContext';
@@ -15,6 +16,7 @@ const menuItems = [
   { id: 'students', label: 'จัดการนักเรียน', icon: Users, path: '/students', roles: ['ADMIN', 'STAFF'] },
   { id: 'inventory', label: 'จัดการสต๊อกสินค้า', icon: Package, path: '/inventory', roles: ['ADMIN', 'STAFF'] },
   { id: 'reports', label: 'รายงาน', icon: BarChart3, path: '/reports', roles: ['ADMIN', 'EXECUTIVE', 'STAFF'] },
+  { id: 'semesters', label: 'จัดการภาคเรียน', icon: CalendarDays, path: '/semesters', roles: ['ADMIN', 'STAFF'] },
   { id: 'users', label: 'ผู้ใช้งานระบบ', icon: Settings, path: '/users', roles: ['ADMIN'] },
 ];
 

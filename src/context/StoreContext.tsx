@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User, Student, Product, Transaction, Role, AuditLog, StockHistoryItem } from '../types';
-import { mockUsers, mockStudents, mockProducts, mockTransactions, mockStockHistory } from '../data/mock';
+import { User, Student, Product, Transaction, Role, AuditLog, StockHistoryItem, Semester } from '../types';
+import { mockUsers, mockStudents, mockProducts, mockTransactions, mockStockHistory, mockSemesters } from '../data/mock';
 
 type AppMode = 'DEMO' | 'PRODUCTION';
 type Language = 'TH' | 'EN';
@@ -21,21 +21,28 @@ interface StoreContextType {
   transactions: Transaction[];
   auditLogs: AuditLog[];
   stockHistory: StockHistoryItem[];
+  semesters: Semester[];
+  currentSemester: Semester | undefined;
   // Actions
   recordPayment: (studentId: string, amount: number, note: string, attachment?: string) => void;
   recordDistribution: (studentId: string, items: { productId: string; quantity: number }[], note?: string, attachment?: string) => void;
-  recordReturn: (studentId: string, productId: string, quantity: number, note?: string) => void;
+  recordStockIn: (productId: string, quantity: number, note?: string) => void;
   updateProductStock: (productId: string, quantity: number, type: 'IN' | 'OUT') => void;
   addStudent: (student: Omit<Student, 'id' | 'paidAmount' | 'itemsReceived'>) => void;
   updateStudent: (studentId: string, data: Partial<Student>) => void;
   deleteStudent: (studentId: string) => void;
   updateProduct: (productId: string, data: Partial<Product>, note?: string) => StockHistoryItem | null;
   addProduct: (product: Omit<Product, 'id'>) => void;
+  deleteProduct: (productId: string) => void;
   addUser: (user: Omit<User, 'id'>) => void;
   updateUser: (userId: string, data: Partial<User>) => void;
   deleteUser: (userId: string) => void;
   changeUserPassword: (userId: string, newPassword: string, forceChange?: boolean) => void;
   switchUser: (userIdOrRole: string) => User | null;
+  addSemester: (semester: Omit<Semester, 'id'>) => void;
+  updateSemester: (id: string, data: Partial<Semester>) => void;
+  deleteSemester: (id: string) => void;
+  setActiveSemester: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -52,6 +59,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [demoProducts, setDemoProducts] = useState<Product[]>(mockProducts);
   const [demoTransactions, setDemoTransactions] = useState<Transaction[]>(mockTransactions);
   const [stockHistory, setStockHistory] = useState<StockHistoryItem[]>(mockStockHistory);
+  const [semesters, setSemesters] = useState<Semester[]>(mockSemesters);
   
   // Storage for Production mode (Empty initially, meant to be fetched from Google Sheets / Backend)
   const [prodUsers, setProdUsers] = useState<User[]>([]);
@@ -66,6 +74,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const students = mode === 'DEMO' ? demoStudents : prodStudents;
   const products = mode === 'DEMO' ? demoProducts : prodProducts;
   const transactions = mode === 'DEMO' ? demoTransactions : prodTransactions;
+
+  const currentSemester = semesters.find(s => s.isActive) || semesters[0];
 
   const setUsersState = mode === 'DEMO' ? setDemoUsers : setProdUsers;
   const setStudents = mode === 'DEMO' ? setDemoStudents : setProdStudents;
@@ -191,69 +201,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     logAction('RECORD_DISTRIBUTION', `จ่ายสินค้าให้นักเรียน ID: ${studentId} จำนวน ${totalItems} ชิ้น`);
   };
 
-  const recordReturn = (studentId: string, productId: string, quantity: number, note: string = '') => {
-    if (!currentUser) return;
-    const newTx: Transaction = {
-      id: `t${Date.now()}`,
-      type: 'RETURN',
-      studentId,
-      items: [{ productId, quantity }],
-      note,
-      date: new Date().toISOString(),
-      recordedBy: currentUser.id,
-    };
-    setTransactions((prev) => [...prev, newTx]);
-
-    setStudents((prev) =>
-      prev.map((s) => {
-        if (s.id === studentId) {
-          const newReceived = [...(s.receivedItems || [])];
-          const recIdx = newReceived.findIndex(i => i.productId === productId);
-          if (recIdx >= 0) {
-            newReceived[recIdx].quantity -= quantity;
-            if (newReceived[recIdx].quantity <= 0) newReceived.splice(recIdx, 1);
-          }
-
-          const newOrdered = [...(s.orderedItems || [])];
-          const ordIdx = newOrdered.findIndex(i => i.productId === productId);
-          let priceToDeduct = 0;
-          if (ordIdx >= 0) {
-            const prod = products.find(p => p.id === productId);
-            if (prod) {
-              priceToDeduct = prod.price * quantity;
-            }
-            newOrdered[ordIdx].quantity -= quantity;
-            if (newOrdered[ordIdx].quantity <= 0) newOrdered.splice(ordIdx, 1);
-          }
-
-          const newTotalReceived = newReceived.reduce((sum, i) => sum + i.quantity, 0);
-          const newTotalRequired = newOrdered.reduce((sum, i) => sum + i.quantity, 0);
-
-          return { 
-            ...s, 
-            receivedItems: newReceived, 
-            itemsReceived: newTotalReceived,
-            orderedItems: newOrdered,
-            itemsRequired: newTotalRequired,
-            totalFee: Math.max(0, s.totalFee - priceToDeduct)
-          };
-        }
-        return s;
-      })
-    );
-
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === productId) {
-          return { ...p, stock: p.stock + quantity };
-        }
-        return p;
-      })
-    );
-
-    logAction('RECORD_RETURN', `คืนสินค้า ID: ${productId} จำนวน ${quantity} ชิ้น จากนักเรียน ID: ${studentId}`);
-  };
-
   const updateProductStock = (productId: string, quantity: number, type: 'IN' | 'OUT') => {
     setProducts((prev) =>
       prev.map((p) => {
@@ -339,6 +286,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       setStockHistory((prev) => [historyItem!, ...prev]);
       logAction('UPDATE_PRODUCT_STOCK', `${historyItem.actionText} [${historyItem.productCode} - ${historyItem.productName}]`);
+
+      // If stock increased, automatically record a STOCK_IN transaction so it links to the Reports page
+      if (diff > 0) {
+        const stockInTx: Transaction = {
+          id: `t_stockin_${Date.now()}`,
+          type: 'STOCK_IN',
+          items: [{ productId, quantity: diff }],
+          note: note.trim() || `รับเข้าสต๊อกสินค้า: ${currentProduct.name} (${currentProduct.code}) เพิ่ม ${diff} ชิ้น (จาก ${oldStock} เป็น ${newStock} ชิ้น)`,
+          date: now.toISOString(),
+          recordedBy: currentUser?.id || 'admin',
+        };
+        setTransactions((prev) => [stockInTx, ...prev]);
+      }
     }
 
     setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, ...data } : p)));
@@ -351,12 +311,110 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       id: `p${Date.now()}`,
     };
     setProducts((prev) => [...prev, newProduct]);
-    logAction('ADD_PRODUCT', `เพิ่มสินค้าใหม่: ${productData.code}`);
+    
+    // Auto-create a STOCK_IN transaction if initial stock > 0 for complete linkage with Reports
+    const initialQty = Number(newProduct.stock) || 0;
+    if (initialQty > 0) {
+      const stockInTx: Transaction = {
+        id: `t_stockin_${Date.now()}`,
+        type: 'STOCK_IN',
+        items: [{ productId: newProduct.id, quantity: initialQty }],
+        note: `เพิ่มสินค้าใหม่และรับเข้าสต๊อกเริ่มต้น: ${newProduct.name} (${newProduct.code}) จำนวน ${initialQty} ชิ้น`,
+        date: new Date().toISOString(),
+        recordedBy: currentUser?.id || 'admin',
+      };
+      setTransactions((prev) => [stockInTx, ...prev]);
+
+      // Also record in stock history
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear() + 543;
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const dateStr = `${day}/${month}/${year}`;
+      const timeStr = `${hours}:${minutes} น.`;
+
+      const historyItem: StockHistoryItem = {
+        id: `sh_${Date.now()}`,
+        productId: newProduct.id,
+        productCode: newProduct.code,
+        productName: newProduct.name,
+        category: newProduct.category,
+        size: newProduct.size,
+        color: newProduct.color,
+        oldStock: 0,
+        newStock: initialQty,
+        diff: initialQty,
+        actionText: `วันที่ ${dateStr} เวลา ${timeStr} ได้เพิ่มสินค้าใหม่พร้อมสต๊อกเริ่มต้น ${initialQty} ชิ้น`,
+        formattedDate: dateStr,
+        formattedTime: timeStr,
+        timestamp: now.toISOString(),
+        recordedBy: currentUser?.id || 'admin',
+        recorderName: currentUser?.name || 'ผู้ดูแลระบบ',
+        note: 'สต๊อกเริ่มต้นตอนสร้างสินค้าใหม่',
+      };
+      setStockHistory((prev) => [historyItem, ...prev]);
+    }
+
+    logAction('ADD_PRODUCT', `เพิ่มสินค้าใหม่: ${productData.code} (สต๊อกเริ่มต้น ${initialQty} ชิ้น)`);
+  };
+
+  const recordStockIn = (productId: string, quantity: number, note: string = '') => {
+    if (quantity <= 0) return;
+    const prod = products.find(p => p.id === productId);
+    if (!prod) return;
+
+    const oldStock = Number(prod.stock) || 0;
+    const newStock = oldStock + quantity;
+
+    updateProduct(productId, { stock: newStock }, note || `รับเข้าสต๊อกสินค้า ${quantity} ชิ้น`);
   };
 
   const deleteProduct = (productId: string) => {
     setProducts(prev => prev.filter(p => p.id !== productId));
     logAction('DELETE_PRODUCT', `ลบสินค้า ID: ${productId}`);
+  };
+
+  const addSemester = (semData: Omit<Semester, 'id'>) => {
+    const newSem: Semester = {
+      ...semData,
+      id: `sem_${Date.now()}`,
+    };
+    if (newSem.isActive) {
+      setSemesters(prev => [newSem, ...prev.map(s => ({ ...s, isActive: false }))]);
+    } else {
+      setSemesters(prev => [newSem, ...prev]);
+    }
+    logAction('ADD_SEMESTER', `เพิ่มภาคเรียน: ${semData.name}`);
+  };
+
+  const updateSemester = (id: string, data: Partial<Semester>) => {
+    setSemesters(prev => prev.map(s => {
+      if (s.id === id) {
+        return { ...s, ...data };
+      }
+      if (data.isActive) {
+        return { ...s, isActive: false };
+      }
+      return s;
+    }));
+    logAction('UPDATE_SEMESTER', `แก้ไขภาคเรียน ID: ${id}`);
+  };
+
+  const deleteSemester = (id: string) => {
+    setSemesters(prev => prev.filter(s => s.id !== id));
+    logAction('DELETE_SEMESTER', `ลบภาคเรียน ID: ${id}`);
+  };
+
+  const setActiveSemester = (id: string) => {
+    setSemesters(prev => prev.map(s => ({
+      ...s,
+      isActive: s.id === id,
+      status: s.id === id ? 'ACTIVE' : s.status === 'ACTIVE' ? 'CLOSED' : s.status,
+    })));
+    const target = semesters.find(s => s.id === id);
+    logAction('SET_ACTIVE_SEMESTER', `กำหนดภาคเรียนปัจจุบัน: ${target?.name || id}`);
   };
 
   const addUser = (userData: Omit<User, 'id'>) => {
@@ -419,9 +477,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         transactions,
         auditLogs,
         stockHistory,
+        semesters,
+        currentSemester,
         recordPayment,
         recordDistribution,
-        recordReturn,
+        recordStockIn,
         updateProductStock,
         addStudent,
         updateStudent,
@@ -433,6 +493,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         updateUser,
         deleteUser,
         changeUserPassword,
+        addSemester,
+        updateSemester,
+        deleteSemester,
+        setActiveSemester,
       }}
     >
       {children}

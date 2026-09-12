@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   Search, 
@@ -15,11 +16,13 @@ import {
   Filter,
   ArrowRight,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  BarChart3
 } from 'lucide-react';
 import { Product } from '../types';
 
 export function Inventory() {
+  const [searchParams] = useSearchParams();
   const { products, currentUser, updateProduct, addProduct, deleteProduct, stockHistory, language } = useStore();
   const [activeTab, setActiveTab] = useState<'inventory' | 'history'>('inventory');
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +32,20 @@ export function Inventory() {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [editNote, setEditNote] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      setIsAddingProduct(true);
+    }
+    const querySearch = searchParams.get('search');
+    if (querySearch) {
+      setSearchTerm(querySearch);
+    }
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'history') {
+      setActiveTab('history');
+    }
+  }, [searchParams]);
   
   const [editForm, setEditForm] = useState<Partial<Product>>({});
   const [addForm, setAddForm] = useState<Omit<Product, 'id'>>({
@@ -72,6 +89,14 @@ export function Inventory() {
         
         {canEdit && (
           <div className="flex items-center gap-2">
+            <Link
+              to="/reports?type=STOCK_IN"
+              className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-xs"
+              title="ดูรายงานสรุปการรับเข้าสินค้า"
+            >
+              <BarChart3 className="w-4 h-4 text-blue-600" />
+              รายงานการรับสินค้าเข้า
+            </Link>
             <button className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4" />
               นำเข้า Excel
@@ -570,9 +595,12 @@ export function Inventory() {
                     alert('กรุณากรอกรหัสและชื่อสินค้า');
                     return;
                   }
+                  const addedName = addForm.name;
+                  const addedQty = Number(addForm.stock) || 0;
                   addProduct({ ...addForm, initialStock: addForm.stock });
                   setIsAddingProduct(false);
                   setAddForm({code: '', name: '', category: '', size: '', color: '', costPrice: 0, price: 0, stock: 0, minStock: 0});
+                  setToastMessage(`เพิ่มสินค้า "${addedName}" สำเร็จ และบันทึกประวัติการรับเข้าสินค้า (Stock-In ${addedQty} ชิ้น) เชื่อมโยงกับระบบรายงานเรียบร้อยแล้ว`);
                 }}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium text-sm transition-colors shadow-sm"
               >

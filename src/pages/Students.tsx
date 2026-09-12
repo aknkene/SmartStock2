@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Search, X, UserPlus, FileSpreadsheet, History, Image as ImageIcon, Edit2, Plus, Trash2, PackageCheck, Receipt, CreditCard, RotateCcw } from 'lucide-react';
+import { Search, X, UserPlus, FileSpreadsheet, History, Image as ImageIcon, Edit2, Plus, Trash2, PackageCheck, Receipt, CreditCard } from 'lucide-react';
 import { Transaction, Student } from '../types';
 
 export function Students() {
-  const { students, transactions, products, currentUser, addStudent, updateStudent, deleteStudent, recordDistribution, recordPayment, recordReturn, language } = useStore();
+  const { students, transactions, products, currentUser, addStudent, updateStudent, deleteStudent, recordDistribution, recordPayment, language } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Filters
@@ -14,7 +14,7 @@ export function Students() {
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'INFO' | 'DISTRIBUTION' | 'PAYMENT' | 'HISTORY' | 'RETURN'>('INFO');
+  const [activeTab, setActiveTab] = useState<'INFO' | 'DISTRIBUTION' | 'PAYMENT' | 'HISTORY'>('INFO');
   
   // Service Desk states
   const [cart, setCart] = useState<{productId: string, quantity: number}[]>([]);
@@ -24,7 +24,6 @@ export function Students() {
   const [payAmount, setPayAmount] = useState('');
   const [payNote, setPayNote] = useState('');
   const [payAttachment, setPayAttachment] = useState<string>('');
-  const [returnNote, setReturnNote] = useState('');
   
   const initialForm = {
     studentId: '',
@@ -229,17 +228,6 @@ export function Students() {
       setDistAttachment('');
       alert('บันทึกการจ่ายสินค้าสำเร็จ');
       setIsFormModalOpen(false);
-    }
-  };
-
-  const handleReturn = (productId: string, quantity: number) => {
-    if (editingStudentId && quantity > 0) {
-      if (window.confirm('คุณแน่ใจหรือไม่ที่จะคืนสินค้านี้?')) {
-        recordReturn(editingStudentId, productId, quantity, returnNote);
-        setReturnNote('');
-        alert('บันทึกการคืนสินค้าสำเร็จ');
-        setIsFormModalOpen(false);
-      }
     }
   };
 
@@ -453,14 +441,6 @@ export function Students() {
                   }`}
                 >
                   <History className="w-4 h-4" /> ประวัติ
-                </button>
-                <button
-                  onClick={() => setActiveTab('RETURN')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
-                    activeTab === 'RETURN' ? 'border-red-500 text-red-700 bg-white rounded-t-lg' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <RotateCcw className="w-4 h-4" /> คืนสินค้า
                 </button>
               </div>
             )}
@@ -877,14 +857,14 @@ export function Students() {
                       <li key={tx.id} className="p-4 hover:bg-slate-50 transition-colors">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium mb-1 ${tx.type === 'PAYMENT' ? 'bg-purple-100 text-purple-800' : tx.type === 'RETURN' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                              {tx.type === 'PAYMENT' ? 'ชำระเงิน' : tx.type === 'RETURN' ? 'คืนสินค้า' : 'รับสินค้า'}
+                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium mb-1 ${tx.type === 'PAYMENT' ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              {tx.type === 'PAYMENT' ? 'ชำระเงิน' : 'รับสินค้า'}
                             </span>
                             <p className="text-sm text-slate-600">{new Date(tx.date).toLocaleString('th-TH')}</p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-slate-900">
-                              {tx.type === 'PAYMENT' ? `+ ฿${tx.amount}` : tx.type === 'RETURN' ? `- ${tx.items?.reduce((sum, i) => sum + i.quantity, 0)} ชิ้น` : `+ ${tx.items?.reduce((sum, i) => sum + i.quantity, 0)} ชิ้น`}
+                              {tx.type === 'PAYMENT' ? `+ ฿${tx.amount}` : `+ ${tx.items?.reduce((sum, i) => sum + i.quantity, 0)} ชิ้น`}
                             </p>
                             <p className="text-xs text-slate-500">โดย: {tx.recordedBy}</p>
                           </div>
@@ -907,63 +887,6 @@ export function Students() {
                     <p>ยังไม่มีประวัติการทำรายการ</p>
                   </div>
                 )}
-              </div>
-            )}
-
-            {editingStudentId && activeTab === 'RETURN' && (
-              <div className="flex flex-col h-full max-w-2xl mx-auto w-full">
-                <h3 className="font-semibold text-slate-800 mb-6 flex items-center gap-2 text-lg">
-                  <RotateCcw className="w-5 h-5 text-red-500" /> ทำรายการคืนสินค้า
-                </h3>
-                
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
-                  <p className="text-sm text-slate-500 mb-1">ข้อมูลนักเรียน</p>
-                  <p className="font-bold text-lg text-slate-900">{newStudentForm.studentId} - {newStudentForm.firstName} {newStudentForm.lastName}</p>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-700">สินค้าที่รับไปแล้ว</h4>
-                  {newStudentForm.receivedItems && newStudentForm.receivedItems.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-3">
-                      {newStudentForm.receivedItems.map(item => {
-                        const product = products.find(p => p.id === item.productId);
-                        if (!product) return null;
-                        return (
-                          <div key={item.productId} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-white shadow-sm">
-                            <div>
-                              <p className="font-semibold text-slate-800">{product.name}</p>
-                              <p className="text-sm text-slate-500">รับไปแล้ว: {item.quantity} ชิ้น</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <button
-                                onClick={() => handleReturn(product.id, 1)}
-                                className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 flex items-center gap-1"
-                              >
-                                <RotateCcw className="w-4 h-4" /> คืน 1 ชิ้น
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-lg border border-slate-200">
-                      ยังไม่มีสินค้าที่รับไปแล้ว
-                    </div>
-                  )}
-
-                  {newStudentForm.receivedItems && newStudentForm.receivedItems.length > 0 && (
-                    <div className="mt-6">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">เหตุผลการคืน (ตัวเลือก)</label>
-                      <textarea
-                        value={returnNote}
-                        onChange={(e) => setReturnNote(e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 min-h-[80px]"
-                        placeholder="เช่น เปลี่ยนขนาด, สินค้ามีตำหนิ, ออกกลางคัน..."
-                      />
-                    </div>
-                  )}
-                </div>
               </div>
             )}
             </div>

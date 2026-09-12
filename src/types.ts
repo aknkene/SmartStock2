@@ -51,9 +51,22 @@ export interface Product {
   minStock: number;
 }
 
+export interface Semester {
+  id: string;
+  name: string; // e.g., '1/2567', '2/2567'
+  academicYear: string; // '2567'
+  term: string; // '1', '2', 'ภาคฤดูร้อน'
+  year?: number;
+  startDate?: string;
+  endDate?: string;
+  isActive: boolean;
+  status: 'ACTIVE' | 'CLOSED' | 'UPCOMING';
+  note?: string;
+}
+
 export interface Transaction {
   id: string;
-  type: 'PAYMENT' | 'DISTRIBUTION' | 'STOCK_IN' | 'RETURN';
+  type: 'PAYMENT' | 'DISTRIBUTION' | 'STOCK_IN';
   studentId?: string;
   amount?: number;
   items?: { productId: string; quantity: number }[];
