@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix UniStock",
+  "description": "ระบบบริหารการจำหน่ายเครื่องแต่งกายและอุปกรณ์นักเรียนอาชีวศึกษา",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
