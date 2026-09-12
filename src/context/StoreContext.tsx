@@ -11,6 +11,7 @@ interface StoreContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   currentUser: User | null;
+  originalUser: User | null;
   setCurrentUser: (user: User | null) => void;
   isAuthenticated: boolean;
   login: (username: string, password?: string) => boolean;
@@ -51,6 +52,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<AppMode>('PRODUCTION');
   const [language, setLanguage] = useState<Language>('TH');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [originalUser, setOriginalUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   
   // Storage for Demo mode
@@ -105,6 +107,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
     if (user) {
       setCurrentUser(user);
+      setOriginalUser(user);
       setIsAuthenticated(true);
       logAction('LOGIN', `เข้าสู่ระบบสำเร็จ: ${user.name} (${user.username})`);
       return true;
@@ -131,6 +134,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setCurrentUser(null);
+    setOriginalUser(null);
     setIsAuthenticated(false);
   };
 
@@ -466,6 +470,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         language,
         setLanguage,
         currentUser,
+        originalUser,
         setCurrentUser,
         isAuthenticated,
         login,

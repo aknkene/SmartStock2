@@ -22,7 +22,7 @@ const menuItems = [
 ];
 
 export function Sidebar() {
-  const { currentUser, switchUser } = useStore();
+  const { currentUser, originalUser, switchUser } = useStore();
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -74,12 +74,14 @@ export function Sidebar() {
             <span className="text-xs text-slate-400">@{currentUser.username}</span>
           </div>
         </div>
-        <button
-          onClick={() => switchUser(isStaff ? 'ADMIN' : 'STAFF')}
-          className="w-full py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 border border-slate-700"
-        >
-          <span>{isStaff ? t('sidebar.switchAdmin') : t('sidebar.switchStaff')}</span>
-        </button>
+        {originalUser?.role === 'ADMIN' && (
+          <button
+            onClick={() => switchUser(isStaff ? 'ADMIN' : 'STAFF')}
+            className="w-full py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 border border-slate-700"
+          >
+            <span>{isStaff ? t('sidebar.switchAdmin') : t('sidebar.switchStaff')}</span>
+          </button>
+        )}
       </div>
     </aside>
   );

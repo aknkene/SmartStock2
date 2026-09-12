@@ -18,7 +18,7 @@ const roleLabels: Record<Role, string> = {
 export function Users() {
   const { 
     users, currentUser, addUser, updateUser, deleteUser, 
-    changeUserPassword, switchUser, auditLogs, language 
+    changeUserPassword, switchUser, auditLogs, originalUser, language 
   } = useStore();
   const { t } = useTranslation();
   
@@ -219,13 +219,15 @@ export function Users() {
           เพื่อความปลอดภัยของระบบ เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถจัดการบัญชีผู้ใช้และเปลี่ยนรหัสผ่านได้
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-3">
-          <button
-            onClick={() => switchUser('ADMIN')}
-            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2"
-          >
-            <Shield className="w-4 h-4" />
-            <span>สลับเป็นมุมมองแอดมิน (Admin) เพื่อเปลี่ยนรหัสผ่าน</span>
-          </button>
+          {originalUser?.role === 'ADMIN' && (
+            <button
+              onClick={() => switchUser('ADMIN')}
+              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <Shield className="w-4 h-4" />
+              <span>สลับเป็นมุมมองแอดมิน (Admin) เพื่อเปลี่ยนรหัสผ่าน</span>
+            </button>
+          )}
           <Link
             to="/inventory"
             className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
