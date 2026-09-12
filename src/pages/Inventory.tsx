@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { 
   Search, 
   Plus, 
@@ -24,6 +25,7 @@ import { Product } from '../types';
 export function Inventory() {
   const [searchParams] = useSearchParams();
   const { products, currentUser, updateProduct, addProduct, deleteProduct, stockHistory, language } = useStore();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'inventory' | 'history'>('inventory');
   const [searchTerm, setSearchTerm] = useState('');
   const [historySearchTerm, setHistorySearchTerm] = useState('');
@@ -83,7 +85,7 @@ export function Inventory() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">จัดการสต๊อกสินค้า</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t('inventory.title')}</h1>
           <p className="text-sm text-slate-500 mt-1">ตรวจสอบ อัปเดตจำนวนสินค้าคงเหลือ และติดตามประวัติการแก้ไขสต๊อก</p>
         </div>
         
@@ -106,7 +108,7 @@ export function Inventory() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              เพิ่มสินค้าใหม่
+              {t('inventory.add')}
             </button>
           </div>
         )}
@@ -189,7 +191,7 @@ export function Inventory() {
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="ค้นหาชื่อสินค้า หรือ รหัสสินค้า..."
+                placeholder={t('inventory.searchPlaceholderAlt')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -204,17 +206,17 @@ export function Inventory() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-3">รหัสสินค้า</th>
-                  <th className="px-6 py-3">ชื่อสินค้า</th>
-                  <th className="px-6 py-3">ประเภท</th>
-                  <th className="px-6 py-3">สี/ขนาด</th>
-                  <th className="px-6 py-3 text-right">ราคาทุน</th>
-                  <th className="px-6 py-3 text-right">ราคาขาย</th>
-                  <th className="px-6 py-3 text-right">กำไร/หน่วย</th>
-                  <th className="px-6 py-3 text-center">คงเหลือ</th>
-                  <th className="px-6 py-3 text-right">มูลค่าสต๊อก(ทุน)</th>
-                  <th className="px-6 py-3 text-center">สถานะ</th>
-                  {canEdit && <th className="px-6 py-3 text-right">จัดการ</th>}
+                  <th className="px-6 py-3">{t('inventory.tableCodeAlt')}</th>
+                  <th className="px-6 py-3">{t('inventory.tableNameAlt')}</th>
+                  <th className="px-6 py-3">{t('inventory.tableType')}</th>
+                  <th className="px-6 py-3">{t('inventory.tableColorSize')}</th>
+                  <th className="px-6 py-3 text-right">{t('inventory.tableCostAlt')}</th>
+                  <th className="px-6 py-3 text-right">{t('inventory.tablePriceAlt')}</th>
+                  <th className="px-6 py-3 text-right">{t('inventory.tableProfit')}</th>
+                  <th className="px-6 py-3 text-center">{t('inventory.tableStockAlt')}</th>
+                  <th className="px-6 py-3 text-right">{t('inventory.tableStockValue')}</th>
+                  <th className="px-6 py-3 text-center">{t('semesters.filterStatus')}</th>
+                  {canEdit && <th className="px-6 py-3 text-right">{t('common.manage')}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">

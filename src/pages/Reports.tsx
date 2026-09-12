@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { 
   FileText, 
   Download, 
@@ -34,6 +35,7 @@ type ReportType =
 export function Reports() {
   const [searchParams] = useSearchParams();
   const { students, products, transactions, users, semesters, currentSemester, language } = useStore();
+  const { t } = useTranslation();
   
   const [reportType, setReportType] = useState<ReportType>('STOCK_REMAINING');
   const [startDate, setStartDate] = useState('');
@@ -262,10 +264,10 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">รหัสสินค้า</th>
-                <th className="px-4 py-3">ชื่อสินค้า</th>
-                <th className="px-4 py-3">สี/ขนาด</th>
-                <th className="px-4 py-3 text-right">คงเหลือ</th>
+                <th className="px-4 py-3">{t('reports.tableItemCode')}</th>
+                <th className="px-4 py-3">{t('reports.tableItemName')}</th>
+                <th className="px-4 py-3">{t('reports.tableColorSize')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableRemaining')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -287,10 +289,10 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">รหัสสินค้า</th>
-                <th className="px-4 py-3">ชื่อสินค้า</th>
-                <th className="px-4 py-3 text-right">คงเหลือ</th>
-                <th className="px-4 py-3 text-right">จุดสั่งซื้อ (ขั้นต่ำ)</th>
+                <th className="px-4 py-3">{t('reports.tableItemCode')}</th>
+                <th className="px-4 py-3">{t('reports.tableItemName')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableRemaining')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableReorder')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -312,10 +314,10 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">รหัสนักเรียน</th>
-                <th className="px-4 py-3">ชื่อ-สกุล</th>
-                <th className="px-4 py-3">ห้อง</th>
-                <th className="px-4 py-3 text-center">รับแล้ว / ต้องรับทั้งหมด</th>
+                <th className="px-4 py-3">{t('reports.tableStudentId')}</th>
+                <th className="px-4 py-3">{t('reports.tableStudentName')}</th>
+                <th className="px-4 py-3">{t('reports.tableRoom')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.tableReceivedAll')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -339,12 +341,12 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">รหัสนักเรียน</th>
-                <th className="px-4 py-3">ชื่อ-สกุล</th>
-                <th className="px-4 py-3">ห้อง</th>
-                <th className="px-4 py-3 text-right">ยอดรวม</th>
-                <th className="px-4 py-3 text-right">ชำระแล้ว</th>
-                <th className="px-4 py-3 text-right">ค้างชำระ</th>
+                <th className="px-4 py-3">{t('reports.tableStudentId')}</th>
+                <th className="px-4 py-3">{t('reports.tableStudentName')}</th>
+                <th className="px-4 py-3">{t('reports.tableRoom')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableTotal')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tablePaid')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableUnpaid')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -451,13 +453,13 @@ export function Reports() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">วันที่ / เวลา</th>
-                    <th className="px-4 py-3 font-semibold">รหัสนักเรียน</th>
-                    <th className="px-4 py-3 font-semibold">ชื่อ - นามสกุล</th>
-                    <th className="px-4 py-3 font-semibold">ห้อง / แผนก</th>
-                    <th className="px-4 py-3 text-right font-semibold">จำนวนเงิน (บาท)</th>
-                    <th className="px-4 py-3 font-semibold">ผู้บันทึก</th>
-                    <th className="px-4 py-3 font-semibold">หมายเหตุ</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableDateTime')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableStudentId')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableStudentNameFull')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableRoomDept')}</th>
+                    <th className="px-4 py-3 text-right font-semibold">{t('reports.tableAmount')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableRecorder')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableNote')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -580,10 +582,10 @@ export function Reports() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700">
                   <tr>
-                    <th className="px-4 py-2.5 font-semibold">เดือน / ปี</th>
-                    <th className="px-4 py-2.5 text-center font-semibold">จำนวนรายการ</th>
-                    <th className="px-4 py-2.5 text-right font-semibold">ยอดเงินรวม (บาท)</th>
-                    <th className="px-4 py-2.5 text-center font-semibold">สัดส่วน (%)</th>
+                    <th className="px-4 py-2.5 font-semibold">{t('reports.tableMonthYear')}</th>
+                    <th className="px-4 py-2.5 text-center font-semibold">{t('reports.tableTotalItems')}</th>
+                    <th className="px-4 py-2.5 text-right font-semibold">{t('reports.tableTotalAmount')}</th>
+                    <th className="px-4 py-2.5 text-center font-semibold">{t('reports.tablePercent')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -643,13 +645,13 @@ export function Reports() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">วันที่ / เวลา</th>
-                    <th className="px-4 py-3 font-semibold">รหัสนักเรียน</th>
-                    <th className="px-4 py-3 font-semibold">ชื่อ - นามสกุล</th>
-                    <th className="px-4 py-3 font-semibold">ห้อง / แผนก</th>
-                    <th className="px-4 py-3 text-right font-semibold">จำนวนเงิน (บาท)</th>
-                    <th className="px-4 py-3 font-semibold">ผู้บันทึก</th>
-                    <th className="px-4 py-3 font-semibold">หมายเหตุ</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableDateTime')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableStudentId')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableStudentNameFull')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableRoomDept')}</th>
+                    <th className="px-4 py-3 text-right font-semibold">{t('reports.tableAmount')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableRecorder')}</th>
+                    <th className="px-4 py-3 font-semibold">{t('reports.tableNote')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -744,12 +746,12 @@ export function Reports() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
                   <tr>
-                    <th className="px-4 py-3 whitespace-nowrap">วันที่ / เวลา</th>
-                    <th className="px-4 py-3">รหัสและรายการสินค้า</th>
-                    <th className="px-4 py-3 text-center">จำนวนรับเข้า</th>
-                    <th className="px-4 py-3">ผู้บันทึก</th>
-                    <th className="px-4 py-3">หมายเหตุ</th>
-                    <th className="px-4 py-3 text-right">การจัดการ</th>
+                    <th className="px-4 py-3 whitespace-nowrap">{t('reports.tableDateTime')}</th>
+                    <th className="px-4 py-3">{t('reports.tableItemDetails')}</th>
+                    <th className="px-4 py-3 text-center">{t('reports.tableReceiveAmount')}</th>
+                    <th className="px-4 py-3">{t('reports.tableRecorder')}</th>
+                    <th className="px-4 py-3">{t('reports.tableNote')}</th>
+                    <th className="px-4 py-3 text-right">{t('reports.tableAction')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -836,12 +838,12 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">วันที่ / เวลา</th>
-                <th className="px-4 py-3">รายการสินค้า</th>
-                <th className="px-4 py-3">รหัสนักเรียน</th>
-                <th className="px-4 py-3">ชื่อนักเรียน</th>
-                <th className="px-4 py-3">ผู้บันทึก</th>
-                <th className="px-4 py-3">หมายเหตุ</th>
+                <th className="px-4 py-3">{t('reports.tableDateTime')}</th>
+                <th className="px-4 py-3">{t('reports.tableItemList')}</th>
+                <th className="px-4 py-3">{t('reports.tableStudentId')}</th>
+                <th className="px-4 py-3">{t('reports.tableStudentName')}</th>
+                <th className="px-4 py-3">{t('reports.tableRecorder')}</th>
+                <th className="px-4 py-3">{t('reports.tableNote')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -896,11 +898,11 @@ export function Reports() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">ห้องเรียน</th>
-                <th className="px-4 py-3 text-center">นักเรียนทั้งหมด</th>
-                <th className="px-4 py-3 text-center">ชำระครบแล้ว</th>
-                <th className="px-4 py-3 text-center">รับของครบแล้ว</th>
-                <th className="px-4 py-3 text-right">ยอดค้างชำระรวม</th>
+                <th className="px-4 py-3">{t('reports.tableClassroom')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.tableTotalStudents')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.tableFullyPaid')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.tableFullyReceived')}</th>
+                <th className="px-4 py-3 text-right">{t('reports.tableTotalUnpaid')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -942,7 +944,7 @@ export function Reports() {
     <div className="space-y-6 h-full flex flex-col print:m-0 print:p-0 print:h-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">ระบบรายงาน (Reports)</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t('reports.titleAlt')}</h1>
           <p className="text-sm text-slate-500 mt-1">สรุปข้อมูลและส่งออกรายงานรูปแบบต่างๆ</p>
         </div>
         <div className="flex items-center gap-2">
@@ -951,14 +953,14 @@ export function Reports() {
             className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
             <Download className="w-4 h-4 text-emerald-600" />
-            {language === 'TH' ? 'ดาวน์โหลด Excel' : 'Export Excel'}
+            {t('reports.exportExcel')}
           </button>
           <button 
             onClick={handlePrint}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
           >
             <Printer className="w-4 h-4" />
-            {language === 'TH' ? 'พิมพ์ / PDF' : 'Print / PDF'}
+            {t('reports.print')}
           </button>
         </div>
       </div>

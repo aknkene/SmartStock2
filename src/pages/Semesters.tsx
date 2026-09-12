@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { 
   CalendarDays, 
   Plus, 
@@ -33,6 +34,7 @@ export function Semesters() {
     currentUser,
     language 
   } = useStore();
+  const { t } = useTranslation();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'CLOSED' | 'UPCOMING'>('ALL');
@@ -148,9 +150,9 @@ export function Semesters() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900">จัดการภาคเรียน (Semester Management)</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{t('semesters.titleAlt')}</h1>
             <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full border border-blue-200">
-              {semesters.length} ภาคเรียน
+              {semesters.length} {t('semesters.tableNameAlt')}
             </span>
           </div>
           <p className="text-sm text-slate-500 mt-1">
@@ -164,7 +166,7 @@ export function Semesters() {
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            เพิ่มภาคเรียนใหม่
+            {t('semesters.add')}
           </button>
         )}
       </div>
@@ -281,12 +283,12 @@ export function Semesters() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
               <tr>
-                <th className="px-5 py-3.5">ชื่อภาคเรียน</th>
-                <th className="px-5 py-3.5">ปีการศึกษา</th>
-                <th className="px-5 py-3.5">ภาคเรียนที่</th>
-                <th className="px-5 py-3.5">ช่วงเวลา (เริ่ม - สิ้นสุด)</th>
-                <th className="px-5 py-3.5 text-center">สถานะ</th>
-                <th className="px-5 py-3.5 text-right">การจัดการ</th>
+                <th className="px-5 py-3.5">{t('semesters.tableNameAlt')}</th>
+                <th className="px-5 py-3.5">{t('semesters.tableAcademicYear')}</th>
+                <th className="px-5 py-3.5">{t('semesters.tableTermAlt')}</th>
+                <th className="px-5 py-3.5">{t('semesters.tablePeriodAlt')}</th>
+                <th className="px-5 py-3.5 text-center">{t('semesters.tableStatus')}</th>
+                <th className="px-5 py-3.5 text-right">{t('common.action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -404,7 +406,7 @@ export function Semesters() {
                       className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      เพิ่มภาคเรียนใหม่
+                      {t('semesters.add')}
                     </button>
                   </td>
                 </tr>

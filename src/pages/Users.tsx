@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { 
   Users as UsersIcon, UserCheck, UserX, Search, Filter, Plus, MoreVertical, 
   X, History, Key, CheckCircle, XCircle, ShieldAlert, Eye, EyeOff, 
@@ -19,6 +20,7 @@ export function Users() {
     users, currentUser, addUser, updateUser, deleteUser, 
     changeUserPassword, switchUser, auditLogs, language 
   } = useStore();
+  const { t } = useTranslation();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -239,7 +241,7 @@ export function Users() {
     <div className="space-y-6 h-full flex flex-col">
       {/* Header & Summary Cards */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">จัดการผู้ใช้งานระบบ</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('users.titleAlt')}</h1>
         <p className="text-sm text-slate-500 mt-1">เพิ่ม แก้ไข และกำหนดสิทธิ์การใช้งานของบุคลากร</p>
       </div>
 
@@ -317,7 +319,7 @@ export function Users() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
-              เพิ่มผู้ใช้งาน
+              {t('users.add')}
             </button>
           </div>
           
@@ -375,14 +377,14 @@ export function Users() {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200 sticky top-0 z-10">
               <tr>
-                <th className="px-4 py-3">ชื่อ–นามสกุล</th>
-                <th className="px-4 py-3">ชื่อผู้ใช้ (Username)</th>
-                <th className="px-4 py-3">บทบาท</th>
-                <th className="px-4 py-3">หน่วยงาน</th>
-                <th className="px-4 py-3">ห้องที่ดูแล</th>
-                <th className="px-4 py-3 text-center">สถานะ</th>
-                <th className="px-4 py-3">เข้าใช้ล่าสุด</th>
-                <th className="px-4 py-3 text-center">จัดการ</th>
+                <th className="px-4 py-3">{t('users.tableFullNameAlt')}</th>
+                <th className="px-4 py-3">{t('users.tableNameAlt')}</th>
+                <th className="px-4 py-3">{t('users.tableRoleAlt')}</th>
+                <th className="px-4 py-3">{t('users.tableDeptAlt')}</th>
+                <th className="px-4 py-3">{t('users.tableRoomAlt')}</th>
+                <th className="px-4 py-3 text-center">{t('users.tableStatusAlt')}</th>
+                <th className="px-4 py-3">{t('users.tableLastLoginAlt')}</th>
+                <th className="px-4 py-3 text-center">{t('common.manage')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100" ref={dropdownRef}>

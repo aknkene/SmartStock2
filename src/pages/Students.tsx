@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Search, X, UserPlus, FileSpreadsheet, History, Image as ImageIcon, Edit2, Plus, Trash2, PackageCheck, Receipt, CreditCard } from 'lucide-react';
 import { Transaction, Student } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function Students() {
   const { students, transactions, products, currentUser, addStudent, updateStudent, deleteStudent, recordDistribution, recordPayment, language } = useStore();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Filters
@@ -248,7 +250,7 @@ export function Students() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">จัดการนักเรียน</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t('students.title')}</h1>
           <p className="text-sm text-slate-500 mt-1">เพิ่ม ค้นหา และดูข้อมูลของนักเรียนทั้งหมด</p>
         </div>
         
@@ -263,7 +265,7 @@ export function Students() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
             >
               <UserPlus className="w-4 h-4" />
-              เพิ่มนักเรียน
+              {t('students.add')}
             </button>
           </div>
         )}
@@ -275,7 +277,7 @@ export function Students() {
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text"
-              placeholder="ค้นหารหัสนักเรียน ชื่อ หรือนามสกุล..."
+              placeholder={t('students.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -287,7 +289,7 @@ export function Students() {
               onChange={(e) => setLevelFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">ทุกระดับชั้น</option>
+              <option value="">{t('common.all')} {t('students.filterLevel')}</option>
               {uniqueLevels.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
             </select>
             <select
@@ -295,7 +297,7 @@ export function Students() {
               onChange={(e) => setRoomFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">ทุกห้อง</option>
+              <option value="">{t('common.all')} {t('students.filterRoom')}</option>
               {uniqueRooms.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
             <select
@@ -303,7 +305,7 @@ export function Students() {
               onChange={(e) => setDeptFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">ทุกแผนก</option>
+              <option value="">{t('common.all')} {t('students.filterDept')}</option>
               {uniqueDepts.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
@@ -313,13 +315,13 @@ export function Students() {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3">รหัสนักเรียน</th>
-                <th className="px-6 py-3">ชื่อ-นามสกุล</th>
-                <th className="px-6 py-3">ระดับชั้น</th>
-                <th className="px-6 py-3">แผนกวิชา</th>
-                <th className="px-6 py-3 text-center">รับของแล้ว</th>
-                <th className="px-6 py-3 text-right">ยอดชำระแล้ว</th>
-                {canEdit && <th className="px-6 py-3 text-right">จัดการ</th>}
+                <th className="px-6 py-3">{t('students.tableId')}</th>
+                <th className="px-6 py-3">{t('students.tableName')}</th>
+                <th className="px-6 py-3">{t('students.tableLevel')}</th>
+                <th className="px-6 py-3">{t('students.tableDept')}</th>
+                <th className="px-6 py-3 text-center">{t('students.tableReceived')}</th>
+                <th className="px-6 py-3 text-right">{t('students.tablePaid')}</th>
+                {canEdit && <th className="px-6 py-3 text-right">{t('common.manage')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">

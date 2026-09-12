@@ -1,9 +1,11 @@
 import { Bell, Globe, ShieldAlert, LogOut, UserCheck, ArrowRightLeft, Shield } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function Header() {
   const { currentUser, mode, setMode, language, setLanguage, logout, switchUser } = useStore();
+  const { t } = useTranslation();
 
   if (!currentUser) return null;
 
@@ -16,12 +18,12 @@ export function Header() {
         {mode === 'DEMO' ? (
           <div className="flex items-center gap-1.5 bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-amber-200">
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>{language === 'TH' ? 'Demo' : 'Demo Mode'}</span>
+            <span>{t('header.demo')}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200">
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>{language === 'TH' ? 'Production' : 'Production'}</span>
+            <span>{t('header.production')}</span>
           </div>
         )}
 
@@ -36,7 +38,7 @@ export function Header() {
                 : "bg-slate-100 text-slate-700 border-slate-200"
           )}>
             {isAdmin ? <Shield className="w-3.5 h-3.5 text-purple-600" /> : <UserCheck className="w-3.5 h-3.5 text-blue-600" />}
-            <span>{isAdmin ? 'หน้าต่าง: Admin (ผู้ดูแลระบบ)' : isStaff ? 'หน้าต่าง: Staff (เจ้าหน้าที่)' : `หน้าต่าง: ${currentUser.role}`}</span>
+            <span>{isAdmin ? t('header.adminMode') : isStaff ? t('header.staffMode') : `${t('header.roleMode')}${currentUser.role}`}</span>
           </div>
 
           {/* Direct Switch to Staff / Admin button */}
@@ -47,7 +49,7 @@ export function Header() {
               title="สลับไปดูหน้าต่างและการทำงานของเจ้าหน้าที่ (Staff)"
             >
               <ArrowRightLeft className="w-3 h-3" />
-              <span>ดูหน้าต่าง Staff</span>
+              <span>{t('header.viewStaff')}</span>
             </button>
           ) : (
             <button
@@ -56,7 +58,7 @@ export function Header() {
               title="สลับกลับไปหน้าต่างผู้ดูแลระบบ (Admin) เพื่อจัดการระบบหรือเปลี่ยนรหัสผ่าน"
             >
               <ArrowRightLeft className="w-3 h-3" />
-              <span>สลับกลับเป็น Admin</span>
+              <span>{t('header.viewAdmin')}</span>
             </button>
           )}
         </div>
@@ -94,7 +96,7 @@ export function Header() {
           title="ออกจากระบบ"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">ออกจากระบบ</span>
+          <span className="hidden md:inline">{t('header.logout')}</span>
         </button>
       </div>
     </header>

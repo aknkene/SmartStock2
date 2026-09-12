@@ -39,7 +39,7 @@ export function Login() {
           <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-3 shadow-lg shadow-blue-500/30">
             <PackageSearch className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">UniStock</h1>
+          <h1 className="text-2xl font-bold text-slate-900">SmartStock</h1>
           <p className="text-slate-500 mt-1 text-center text-xs">ระบบบริหารจัดการสินค้าคงคลังและแจกจ่ายอุปกรณ์นักเรียน</p>
         </div>
 

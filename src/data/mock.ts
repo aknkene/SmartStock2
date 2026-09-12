@@ -1,9 +1,9 @@
 import { Product, Student, User, Transaction, StockHistoryItem, Semester } from '../types';
 
 export const mockUsers: User[] = [
-  { id: 'u1', username: 'admin', password: '12345', name: 'ผู้ดูแลระบบ', firstName: 'สมศักดิ์', lastName: 'แอดมิน', email: 'admin@unistock.com', department: 'ส่วนกลาง', role: 'ADMIN', status: 'ACTIVE' },
-  { id: 'u2', username: 'staff01', password: '12345', name: 'สมชาย ใจดี (เจ้าหน้าที่)', firstName: 'สมชาย', lastName: 'ใจดี', email: 'staff@unistock.com', department: 'พัสดุและการเงิน', role: 'STAFF', status: 'ACTIVE' },
-  { id: 'u3', username: 'exec01', password: '12345', name: 'ผอ. วิทยาลัย', firstName: 'อำนาจ', lastName: 'เจริญ', email: 'exec@unistock.com', department: 'บริหาร', role: 'EXECUTIVE', status: 'ACTIVE' },
+  { id: 'u1', username: 'admin', password: '12345', name: 'ผู้ดูแลระบบ', firstName: 'สมศักดิ์', lastName: 'แอดมิน', email: 'admin@smartstock.com', department: 'ส่วนกลาง', role: 'ADMIN', status: 'ACTIVE' },
+  { id: 'u2', username: 'staff01', password: '12345', name: 'สมชาย ใจดี (เจ้าหน้าที่)', firstName: 'สมชาย', lastName: 'ใจดี', email: 'staff@smartstock.com', department: 'พัสดุและการเงิน', role: 'STAFF', status: 'ACTIVE' },
+  { id: 'u3', username: 'exec01', password: '12345', name: 'ผอ. วิทยาลัย', firstName: 'อำนาจ', lastName: 'เจริญ', email: 'exec@smartstock.com', department: 'บริหาร', role: 'EXECUTIVE', status: 'ACTIVE' },
 ];
 
 export const mockProducts: Product[] = [

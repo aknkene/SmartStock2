@@ -1,9 +1,11 @@
 import { useStore } from '../context/StoreContext';
 import { Users, CheckCircle, AlertTriangle, Coins, Package } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function Dashboard() {
   const { students, products, transactions } = useStore();
+  const { t } = useTranslation();
 
   const totalStudents = students.length;
   const fullyReceived = students.filter(s => s.itemsReceived >= s.itemsRequired).length;
@@ -44,32 +46,32 @@ export function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">ภาพรวมระบบ (Dashboard)</h1>
-          <p className="text-sm text-slate-500 mt-1">สรุปข้อมูลการจ่ายสินค้าและการชำระเงิน</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t('dashboard.title')}</h1>
+          <p className="text-sm text-slate-500 mt-1">{t('dashboard.subtitle')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          title="ยอดขายรวม" 
+          title={t('dashboard.totalSales')} 
           value={`฿${totalSales.toLocaleString()}`} 
           icon={Coins} 
           color="bg-blue-600" 
         />
         <StatCard 
-          title="ต้นทุนสินค้าที่ขาย" 
+          title={t('dashboard.totalCogs')} 
           value={`฿${totalCogs.toLocaleString()}`} 
           icon={Package} 
           color="bg-slate-500" 
         />
         <StatCard 
-          title="กำไรรวม" 
+          title={t('dashboard.totalProfit')} 
           value={`฿${totalProfit.toLocaleString()}`} 
           icon={CheckCircle} 
           color="bg-emerald-500" 
         />
         <StatCard 
-          title="ยอดค้างชำระรวม" 
+          title={t('dashboard.totalUnpaid')} 
           value={`฿${totalUnpaid.toLocaleString()}`} 
           icon={AlertTriangle} 
           color="bg-amber-500" 
@@ -78,22 +80,22 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard 
-          title="นักเรียนทั้งหมด" 
+          title={t('dashboard.totalStudents')} 
           value={totalStudents.toString()} 
           icon={Users} 
           color="bg-blue-500" 
         />
         <StatCard 
-          title="รับสินค้าครบแล้ว" 
+          title={t('dashboard.fullyReceived')} 
           value={fullyReceived.toString()} 
-          subtitle={`${Math.round((fullyReceived/totalStudents)*100 || 0)}% ของทั้งหมด`}
+          subtitle={`${Math.round((fullyReceived/totalStudents)*100 || 0)}${t('dashboard.percentOfTotal')}`}
           icon={CheckCircle} 
           color="bg-emerald-500" 
         />
         <StatCard 
-          title="ชำระเงินครบแล้ว" 
+          title={t('dashboard.fullyPaid')} 
           value={fullyPaid.toString()} 
-          subtitle={`${Math.round((fullyPaid/totalStudents)*100 || 0)}% ของทั้งหมด`}
+          subtitle={`${Math.round((fullyPaid/totalStudents)*100 || 0)}${t('dashboard.percentOfTotal')}`}
           icon={Coins} 
           color="bg-purple-500" 
         />
@@ -101,7 +103,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-6">ความคืบหน้าแยกตามห้องเรียน</h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-6">{t('dashboard.progressByRoom')}</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
@@ -109,9 +111,9 @@ export function Dashboard() {
                 <XAxis dataKey="room" axisLine={false} tickLine={false} />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip cursor={{ fill: '#f8fafc' }} />
-                <Bar dataKey="total" name="จำนวนนร. (คน)" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="paid" name="ชำระครบ (คน)" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="received" name="รับของครบ (คน)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" name={t('dashboard.chartTotal')} fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="paid" name={t('dashboard.chartPaid')} fill="#a855f7" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="received" name={t('dashboard.chartReceived')} fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -119,9 +121,9 @@ export function Dashboard() {
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-800">สินค้าใกล้หมดสต๊อก</h3>
+            <h3 className="text-lg font-semibold text-slate-800">{t('dashboard.lowStock')}</h3>
             <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
-              {lowStockProducts.length} รายการ
+              {lowStockProducts.length} {t('dashboard.items')}
             </span>
           </div>
           
@@ -132,11 +134,11 @@ export function Dashboard() {
                   <li key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100">
                     <div>
                       <p className="text-sm font-semibold text-slate-800">{p.name}</p>
-                      <p className="text-xs text-slate-500">ไซส์: {p.size} | รหัส: {p.code}</p>
+                      <p className="text-xs text-slate-500">{t('dashboard.size')}: {p.size} | {t('dashboard.code')}: {p.code}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-red-600">{p.stock}</p>
-                      <p className="text-xs text-slate-500">ขั้นต่ำ: {p.minStock}</p>
+                      <p className="text-xs text-slate-500">{t('dashboard.min')}: {p.minStock}</p>
                     </div>
                   </li>
                 ))}
@@ -144,7 +146,7 @@ export function Dashboard() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-400">
                 <CheckCircle className="w-12 h-12 mb-2 text-emerald-400" />
-                <p>สต๊อกสินค้าอยู่ในเกณฑ์ปกติ</p>
+                <p>{t('dashboard.stockOk')}</p>
               </div>
             )}
           </div>
