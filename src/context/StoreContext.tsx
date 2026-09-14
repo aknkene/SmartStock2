@@ -204,11 +204,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       date: new Date().toISOString(),
       recordedBy: currentUser.id,
     };
-    setTransactions((prev) => [...prev, newTx]);
-    
-    setStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, paidAmount: s.paidAmount + amount } : s))
-    );
+    if (mode === 'PRODUCTION') {
+      writeToDb('transactions', newTx.id, newTx);
+      const student = students.find(s => s.id === studentId);
+      if (student) {
+        writeToDb('students', studentId, { paidAmount: (Number(student.paidAmount) || 0) + amount });
+      }
+    } else {
+      setTransactions((prev) => [...prev, newTx]);
+      setStudents((prev) => prev.map((s) => (s.id === studentId ? { ...s, paidAmount: s.paidAmount + amount } : s)));
+    }
     logAction('RECORD_PAYMENT', `รับชำระเงิน ${amount} บาท จากนักเรียน ID: ${studentId}`);
   };
 
@@ -224,7 +229,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       date: new Date().toISOString(),
       recordedBy: currentUser.id,
     };
-    setTransactions((prev) => [...prev, newTx]);
+    if (mode === 'PRODUCTION') { writeToDb('transactions', newTx.id, newTx); } else { setTransactions((prev) => [...prev, newTx]); }
 
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -260,16 +265,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProductStock = (productId: string, quantity: number, type: 'IN' | 'OUT') => {
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === productId) {
-          const newStock = type === 'IN' ? p.stock + quantity : p.stock - quantity;
-          const newInitialStock = type === 'IN' ? (p.initialStock || p.stock) + quantity : (p.initialStock || p.stock) - quantity;
-          return { ...p, stock: newStock, initialStock: newInitialStock };
-        }
-        return p;
-      })
-    );
+    if (mode === 'PRODUCTION') {
+      const p = products.find(prod => prod.id === productId);
+      if (p) {
+        const newStock = type === 'IN' ? p.stock + quantity : p.stock - quantity;
+        const newInitialStock = type === 'IN' ? (p.initialStock || p.stock) + quantity : (p.initialStock || p.stock) - quantity;
+        writeToDb('products', productId, { stock: newStock, initialStock: newInitialStock });
+      }
+    } else {
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id === productId) {
+            const newStock = type === 'IN' ? p.stock + quantity : p.stock - quantity;
+            const newInitialStock = type === 'IN' ? (p.initialStock || p.stock) + quantity : (p.initialStock || p.stock) - quantity;
+            return { ...p, stock: newStock, initialStock: newInitialStock };
+          }
+          return p;
+        })
+      );
+    }
     logAction('UPDATE_STOCK', `ปรับปรุงสต๊อกสินค้า ID: ${productId} (${type === 'IN' ? '+' : '-'}${quantity})`);
   };
 
@@ -285,7 +299,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const updateStudent = (studentId: string, data: Partial<Student>) => {
-    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, ...data } : s));
+    if (mode === 'PRODUCTION') { writeToDb('students', studentId, data); } else { setStudents(prev => prev.map(s => s.id === studentId ? { ...s, ...data } : s)); }
     logAction('UPDATE_STUDENT', `แก้ไขข้อมูลนักเรียนรหัส/ID: ${studentId}`);
   };
 
@@ -342,7 +356,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         note: note.trim() ? note.trim() : undefined,
       };
 
-      setStockHistoryState(prev => [historyItem!, ...prev]);
+      if (mode === 'PRODUCTION') { writeToDb('stockHistory', historyItem!.id, historyItem); } else { setStockHistoryState(prev => [historyItem!, ...prev]); }
       logAction('UPDATE_PRODUCT_STOCK', `${historyItem.actionText} [${historyItem.productCode} - ${historyItem.productName}]`);
 
       // If stock increased, automatically record a STOCK_IN transaction so it links to the Reports page
@@ -355,7 +369,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           date: now.toISOString(),
           recordedBy: currentUser?.id || 'admin',
         };
-        setTransactions((prev) => [stockInTx, ...prev]);
+        if (mode === 'PRODUCTION') { writeToDb('transactions', stockInTx.id, stockInTx); } else { setTransactions((prev) => [stockInTx, ...prev]); }
       }
     }
 
@@ -381,7 +395,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         date: new Date().toISOString(),
         recordedBy: currentUser?.id || 'admin',
       };
-      setTransactions((prev) => [stockInTx, ...prev]);
+      if (mode === 'PRODUCTION') { writeToDb('transactions', stockInTx.id, stockInTx); } else { setTransactions((prev) => [stockInTx, ...prev]); }
 
       // Also record in stock history
       const now = new Date();
