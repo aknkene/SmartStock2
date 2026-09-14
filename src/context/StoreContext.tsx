@@ -129,12 +129,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   
   const writeToDb = async (collectionName: string, id: string, data: any) => {
     if (mode === 'PRODUCTION') {
-      await setDoc(doc(db, collectionName, id), data, { merge: true });
+      try { await setDoc(doc(db, collectionName, id), data, { merge: true }); } catch (e) { console.error("Firebase write error:", e); }
     }
   };
   const deleteFromDb = async (collectionName: string, id: string) => {
     if (mode === 'PRODUCTION') {
-      await deleteDoc(doc(db, collectionName, id));
+      try { await deleteDoc(doc(db, collectionName, id)); } catch (e) { console.error("Firebase delete error:", e); }
     }
   };
 
