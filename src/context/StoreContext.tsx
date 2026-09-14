@@ -195,7 +195,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const recordPayment = (studentId: string, amount: number, note: string, attachment?: string) => {
     if (!currentUser) return;
     const newTx: Transaction = {
-      id: `t${Date.now()}`,
+      id: `t${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       type: 'PAYMENT',
       studentId,
       amount,
@@ -220,7 +220,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const recordDistribution = (studentId: string, items: { productId: string; quantity: number }[], note: string = '', attachment?: string) => {
     if (!currentUser) return;
     const newTx: Transaction = {
-      id: `t${Date.now()}`,
+      id: `t${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       type: 'DISTRIBUTION',
       studentId,
       items,
@@ -337,7 +337,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
 
       historyItem = {
-        id: `sh_${Date.now()}`,
+        id: `sh_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         productId,
         productCode: data.code || currentProduct.code,
         productName: data.name || currentProduct.name,
@@ -362,7 +362,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // If stock increased, automatically record a STOCK_IN transaction so it links to the Reports page
       if (diff > 0) {
         const stockInTx: Transaction = {
-          id: `t_stockin_${Date.now()}`,
+          id: `t_stockin_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
           type: 'STOCK_IN',
           items: [{ productId, quantity: diff }],
           note: note.trim() || `รับเข้าสต๊อกสินค้า: ${currentProduct.name} (${currentProduct.code}) เพิ่ม ${diff} ชิ้น (จาก ${oldStock} เป็น ${newStock} ชิ้น)`,
@@ -380,7 +380,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addProduct = (productData: Omit<Product, 'id'>) => {
     const newProduct: Product = {
       ...productData,
-      id: `p${Date.now()}`,
+      id: `p${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     };
     if (mode === 'PRODUCTION') { writeToDb('products', newProduct.id, newProduct); } else { setProducts((prev) => [...prev, newProduct]); }
     
@@ -388,7 +388,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const initialQty = Number(newProduct.stock) || 0;
     if (initialQty > 0) {
       const stockInTx: Transaction = {
-        id: `t_stockin_${Date.now()}`,
+        id: `t_stockin_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         type: 'STOCK_IN',
         items: [{ productId: newProduct.id, quantity: initialQty }],
         note: `เพิ่มสินค้าใหม่และรับเข้าสต๊อกเริ่มต้น: ${newProduct.name} (${newProduct.code}) จำนวน ${initialQty} ชิ้น`,
@@ -408,7 +408,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const timeStr = `${hours}:${minutes} น.`;
 
       const historyItem: StockHistoryItem = {
-        id: `sh_${Date.now()}`,
+        id: `sh_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         productId: newProduct.id,
         productCode: newProduct.code,
         productName: newProduct.name,
