@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "STAFF", "EXECUTIVE"] },
+        "status": { "type": "string" },
+        "forcePasswordChange": { "type": "boolean" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "prefix": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" }
+      }
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student record",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "totalFee": { "type": "number" },
+        "paidAmount": { "type": "number" }
+      }
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "stock": { "type": "number" }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Stock and distribution transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "date": { "type": "string" },
+        "recordedBy": { "type": "string" }
+      }
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System audit log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "userId": { "type": "string" }
+      }
+    },
+    "StockHistory": {
+      "title": "StockHistory",
+      "description": "Stock change history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "diff": { "type": "number" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    "Semester": {
+      "title": "Semester",
+      "description": "School semester",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User accounts"
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Student records"
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Inventory products"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Transactions"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Audit logs"
+    },
+    "/stockHistory/{historyId}": {
+      "schema": { "$ref": "#/entities/StockHistory" },
+      "description": "Stock history"
+    },
+    "/semesters/{semesterId}": {
+      "schema": { "$ref": "#/entities/Semester" },
+      "description": "Semesters"
+    }
+  }
+}

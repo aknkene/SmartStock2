@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+import { db } from '../firebase';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, Student, Product, Transaction, Role, AuditLog, StockHistoryItem, Semester } from '../types';
 import { mockUsers, mockStudents, mockProducts, mockTransactions, mockStockHistory, mockSemesters } from '../data/mock';
 
@@ -81,11 +84,59 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const currentSemester = semesters.find(s => s.isActive) || semesters[0];
 
+  useEffect(() => {
+    if (mode === 'PRODUCTION') {
+      const unsubs: any[] = [];
+      unsubs.push(onSnapshot(collection(db, 'users'), (snapshot) => {
+        if (snapshot.docs.length === 0) {
+          const adminUser = mockUsers.find(u => u.username === "admin") || mockUsers[0];
+          setDoc(doc(db, 'users', adminUser.id), adminUser);
+        } else {
+          setProdUsers(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as User)));
+        }
+      }));
+      unsubs.push(onSnapshot(collection(db, 'students'), (snapshot) => {
+        setProdStudents(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Student)));
+      }));
+      unsubs.push(onSnapshot(collection(db, 'products'), (snapshot) => {
+        setProdProducts(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product)));
+      }));
+      unsubs.push(onSnapshot(collection(db, 'transactions'), (snapshot) => {
+        setProdTransactions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction)));
+      }));
+      unsubs.push(onSnapshot(collection(db, 'stockHistory'), (snapshot) => {
+        setProdStockHistory(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as StockHistoryItem)));
+      }));
+      unsubs.push(onSnapshot(collection(db, 'semesters'), (snapshot) => {
+        setSemesters(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Semester)));
+      }));
+      unsubs.push(onSnapshot(collection(db, 'auditLogs'), (snapshot) => {
+        setAuditLogs(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AuditLog)));
+      }));
+      return () => {
+        unsubs.forEach(unsub => unsub());
+      };
+    }
+  }, [mode]);
+
+
   const setUsersState = mode === 'DEMO' ? setDemoUsers : setProdUsers;
   const setStockHistoryState = mode === 'DEMO' ? setDemoStockHistory : setProdStockHistory;
   const setStudents = mode === 'DEMO' ? setDemoStudents : setProdStudents;
   const setProducts = mode === 'DEMO' ? setDemoProducts : setProdProducts;
   const setTransactions = mode === 'DEMO' ? setDemoTransactions : setProdTransactions;
+
+  
+  const writeToDb = async (collectionName: string, id: string, data: any) => {
+    if (mode === 'PRODUCTION') {
+      await setDoc(doc(db, collectionName, id), data, { merge: true });
+    }
+  };
+  const deleteFromDb = async (collectionName: string, id: string) => {
+    if (mode === 'PRODUCTION') {
+      await deleteDoc(doc(db, collectionName, id));
+    }
+  };
 
   const logAction = (action: string, details: string) => {
     if (!currentUser) return;
@@ -229,7 +280,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       paidAmount: 0,
       itemsReceived: 0,
     };
-    setStudents((prev) => [...prev, newStudent]);
+    if (mode === 'PRODUCTION') { writeToDb('students', newStudent.id, newStudent); } else { setStudents((prev) => [...prev, newStudent]); }
     logAction('ADD_STUDENT', `เพิ่มข้อมูลนักเรียนรหัส: ${studentData.studentId}`);
   };
 
@@ -239,7 +290,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteStudent = (studentId: string) => {
-    setStudents(prev => prev.filter(s => s.id !== studentId));
+    if (mode === 'PRODUCTION') { deleteFromDb('students', studentId); } else { setStudents(prev => prev.filter(s => s.id !== studentId)); }
     logAction('DELETE_STUDENT', `ลบข้อมูลนักเรียน ID: ${studentId}`);
   };
 
@@ -308,7 +359,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, ...data } : p)));
+    if (mode === 'PRODUCTION') { writeToDb('products', productId, data); } else { setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, ...data } : p))); }
     return historyItem;
   };
 
@@ -317,7 +368,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...productData,
       id: `p${Date.now()}`,
     };
-    setProducts((prev) => [...prev, newProduct]);
+    if (mode === 'PRODUCTION') { writeToDb('products', newProduct.id, newProduct); } else { setProducts((prev) => [...prev, newProduct]); }
     
     // Auto-create a STOCK_IN transaction if initial stock > 0 for complete linkage with Reports
     const initialQty = Number(newProduct.stock) || 0;
@@ -361,7 +412,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         recorderName: currentUser?.name || 'ผู้ดูแลระบบ',
         note: 'สต๊อกเริ่มต้นตอนสร้างสินค้าใหม่',
       };
-      setStockHistoryState(prev => [historyItem, ...prev]);
+      if (mode === 'PRODUCTION') { writeToDb('stockHistory', historyItem.id, historyItem); } else { setDemoStockHistory(prev => [historyItem, ...prev]); }
     }
 
     logAction('ADD_PRODUCT', `เพิ่มสินค้าใหม่: ${productData.code} (สต๊อกเริ่มต้น ${initialQty} ชิ้น)`);
@@ -379,7 +430,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteProduct = (productId: string) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+    if (mode === 'PRODUCTION') { deleteFromDb('products', productId); } else { setProducts(prev => prev.filter(p => p.id !== productId)); }
     logAction('DELETE_PRODUCT', `ลบสินค้า ID: ${productId}`);
   };
 
@@ -388,63 +439,99 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...semData,
       id: `sem_${Date.now()}`,
     };
-    if (newSem.isActive) {
-      setSemesters(prev => [newSem, ...prev.map(s => ({ ...s, isActive: false }))]);
+    if (mode === 'PRODUCTION') {
+      if (newSem.isActive) {
+        semesters.forEach(s => {
+          if (s.isActive) writeToDb('semesters', s.id, { isActive: false });
+        });
+      }
+      writeToDb('semesters', newSem.id, newSem);
     } else {
-      setSemesters(prev => [newSem, ...prev]);
+      if (newSem.isActive) {
+        setSemesters(prev => [newSem, ...prev.map(s => ({ ...s, isActive: false }))]);
+      } else {
+        setSemesters(prev => [newSem, ...prev]);
+      }
     }
     logAction('ADD_SEMESTER', `เพิ่มภาคเรียน: ${semData.name}`);
   };
 
   const updateSemester = (id: string, data: Partial<Semester>) => {
-    setSemesters(prev => prev.map(s => {
-      if (s.id === id) {
-        return { ...s, ...data };
-      }
+    if (mode === 'PRODUCTION') {
       if (data.isActive) {
-        return { ...s, isActive: false };
+        semesters.forEach(s => {
+          if (s.isActive && s.id !== id) writeToDb('semesters', s.id, { isActive: false });
+        });
       }
-      return s;
-    }));
+      writeToDb('semesters', id, data);
+    } else {
+      setSemesters(prev => prev.map(s => {
+        if (s.id === id) {
+          return { ...s, ...data };
+        }
+        if (data.isActive) {
+          return { ...s, isActive: false };
+        }
+        return s;
+      }));
+    }
     logAction('UPDATE_SEMESTER', `แก้ไขภาคเรียน ID: ${id}`);
   };
 
   const deleteSemester = (id: string) => {
-    setSemesters(prev => prev.filter(s => s.id !== id));
+    if (mode === 'PRODUCTION') { deleteFromDb('semesters', id); } else { setSemesters(prev => prev.filter(s => s.id !== id)); }
     logAction('DELETE_SEMESTER', `ลบภาคเรียน ID: ${id}`);
   };
 
   const setActiveSemester = (id: string) => {
-    setSemesters(prev => prev.map(s => ({
-      ...s,
-      isActive: s.id === id,
-      status: s.id === id ? 'ACTIVE' : s.status === 'ACTIVE' ? 'CLOSED' : s.status,
-    })));
+    if (mode === 'PRODUCTION') {
+      semesters.forEach(s => {
+        if (s.id === id) {
+          writeToDb('semesters', s.id, { isActive: true, status: 'ACTIVE' });
+        } else if (s.isActive || s.status === 'ACTIVE') {
+          writeToDb('semesters', s.id, { isActive: false, status: 'CLOSED' });
+        }
+      });
+    } else {
+      setSemesters(prev => prev.map(s => ({
+        ...s,
+        isActive: s.id === id,
+        status: s.id === id ? 'ACTIVE' : s.status === 'ACTIVE' ? 'CLOSED' : s.status,
+      })));
+    }
     const target = semesters.find(s => s.id === id);
     logAction('SET_ACTIVE_SEMESTER', `กำหนดภาคเรียนปัจจุบัน: ${target?.name || id}`);
   };
 
   const addUser = (userData: Omit<User, 'id'>) => {
     const newUser: User = { ...userData, id: `u${Date.now()}` };
-    setUsersState(prev => [...prev, newUser]);
+    if (mode === 'PRODUCTION') { writeToDb('users', newUser.id, newUser); } else { setDemoUsers(prev => [...prev, newUser]); }
     logAction('ADD_USER', `เพิ่มผู้ใช้งานใหม่: ${userData.username}`);
   };
 
   const updateUser = (userId: string, data: Partial<User>) => {
-    setUsersState(prev => prev.map(u => {
-      if (u.id === userId) {
-        const updated = { ...u };
-        (Object.keys(data) as (keyof User)[]).forEach(key => {
-          if (data[key] !== undefined && data[key] !== '') {
-            (updated as any)[key] = data[key];
-          } else if (data[key] !== undefined && key !== 'password') {
-            (updated as any)[key] = data[key];
-          }
-        });
-        return updated;
-      }
-      return u;
-    }));
+    if (mode === 'PRODUCTION') {
+      const updateData = { ...data };
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key as keyof User] === undefined) delete updateData[key as keyof User];
+      });
+      writeToDb('users', userId, updateData);
+    } else {
+      setDemoUsers(prev => prev.map(u => {
+        if (u.id === userId) {
+          const updated = { ...u };
+          (Object.keys(data) as (keyof User)[]).forEach(key => {
+            if (data[key] !== undefined && data[key] !== '') {
+              (updated as any)[key] = data[key];
+            } else if (data[key] !== undefined && key !== 'password') {
+              (updated as any)[key] = data[key];
+            }
+          });
+          return updated;
+        }
+        return u;
+      }));
+    }
     logAction('UPDATE_USER', `แก้ไขข้อมูลผู้ใช้งาน ID: ${userId}`);
     if (currentUser?.id === userId) {
       setCurrentUser(prev => prev ? { ...prev, ...data } : prev);
@@ -452,7 +539,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const changeUserPassword = (userId: string, newPassword: string, forceChange: boolean = false) => {
-    setUsersState(prev => prev.map(u => u.id === userId ? { ...u, password: newPassword, forcePasswordChange: forceChange } : u));
+    if (mode === 'PRODUCTION') {
+      writeToDb('users', userId, { password: newPassword, forcePasswordChange: forceChange });
+    } else {
+      setDemoUsers(prev => prev.map(u => u.id === userId ? { ...u, password: newPassword, forcePasswordChange: forceChange } : u));
+    }
     const targetUser = users.find(u => u.id === userId);
     logAction('CHANGE_PASSWORD', `แอดมินได้เปลี่ยนรหัสผ่านสำหรับ ${targetUser?.name || targetUser?.username || userId} เรียบร้อยแล้ว`);
     if (currentUser?.id === userId) {
@@ -461,7 +552,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteUser = (userId: string) => {
-    setUsersState(prev => prev.filter(u => u.id !== userId));
+    if (mode === 'PRODUCTION') { deleteFromDb('users', userId); } else { setDemoUsers(prev => prev.filter(u => u.id !== userId)); }
     logAction('DELETE_USER', `ลบผู้ใช้งาน ID: ${userId}`);
   };
 
