@@ -3,8 +3,8 @@ import { useStore } from '../context/StoreContext';
 import { ShieldAlert, PackageSearch, Eye, EyeOff, User, Shield, Briefcase } from 'lucide-react';
 
 export function Login() {
-  const [username, setUsername] = useState('staff01');
-  const [password, setPassword] = useState('12345');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useStore();
@@ -19,7 +19,7 @@ export function Login() {
     }
     const success = login(u, p);
     if (!success) {
-      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      setError('รหัสผิด โปรดติดต่อผู้ดูแลระบบ');
     }
   };
 
@@ -43,6 +43,13 @@ export function Login() {
           <p className="text-slate-500 mt-1 text-center text-xs">ระบบบริหารจัดการสินค้าคงคลังและแจกจ่ายอุปกรณ์นักเรียน</p>
         </div>
 
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-start gap-2">
+            <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">ชื่อผู้ใช้ (Username)</label>
@@ -58,7 +65,7 @@ export function Login() {
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-medium text-slate-700">รหัสผ่าน (Password)</label>
-              <span className="text-[11px] text-slate-400 font-mono">ค่าเริ่มต้น: 12345</span>
+              
             </div>
             <div className="relative">
               <input

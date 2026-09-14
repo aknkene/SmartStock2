@@ -3,9 +3,10 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useStore } from '../context/StoreContext';
 import { Login } from '../pages/Login';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, currentUser } = useStore();
 
   if (!isAuthenticated) {
     return <Login />;
@@ -20,6 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+      {currentUser?.forcePasswordChange && <ChangePasswordModal />}
     </div>
   );
 }

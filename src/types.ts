@@ -4,6 +4,7 @@ export interface User {
   id: string;
   username: string;
   password?: string;
+  forcePasswordChange?: boolean;
   name: string;
   prefix?: string;
   firstName?: string;

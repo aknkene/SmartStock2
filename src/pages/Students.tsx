@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Search, X, UserPlus, FileSpreadsheet, History, Image as ImageIcon, Edit2, Plus, Trash2, PackageCheck, Receipt, CreditCard } from 'lucide-react';
 import { Transaction, Student } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
+import * as XLSX from 'xlsx';
 
 export function Students() {
   const { students, transactions, products, currentUser, addStudent, updateStudent, deleteStudent, recordDistribution, recordPayment, language } = useStore();
@@ -26,6 +27,59 @@ export function Students() {
   const [payAmount, setPayAmount] = useState('');
   const [payNote, setPayNote] = useState('');
   const [payAttachment, setPayAttachment] = useState<string>('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['รหัสนักเรียน', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ระดับชั้น', 'ห้อง', 'แผนก', 'เบอร์โทร', 'ยอดเงินที่ต้องชำระ'],
+      ['66010001', 'นาย', 'สมชาย', 'ใจดี', 'ปวช.1', '1', 'ช่างยนต์', '0812345678', '1500']
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'StudentsTemplate');
+    XLSX.writeFile(wb, 'SmartStock_Student_Template.xlsx');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        data.forEach((row: any) => {
+          if (row['รหัสนักเรียน'] && row['ชื่อ'] && row['นามสกุล']) {
+            addStudent({
+              studentId: String(row['รหัสนักเรียน']),
+              prefix: String(row['คำนำหน้า'] || ''),
+              firstName: String(row['ชื่อ']),
+              lastName: String(row['นามสกุล']),
+              level: String(row['ระดับชั้น'] || ''),
+              room: String(row['ห้อง'] || ''),
+              department: String(row['แผนก'] || ''),
+              phone: String(row['เบอร์โทร'] || ''),
+              totalFee: Number(row['ยอดเงินที่ต้องชำระ']) || 0,
+              paidAmount: 0
+            });
+          }
+        });
+        alert('นำเข้าข้อมูลสำเร็จ!');
+      } catch (error) {
+        console.error(error);
+        alert('เกิดข้อผิดพลาดในการนำเข้า กรุณาตรวจสอบไฟล์ Excel');
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   
   const initialForm = {
     studentId: '',
@@ -256,10 +310,17 @@ export function Students() {
         
         {canEdit && (
           <div className="flex items-center gap-2">
-            <button className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            
+            <button onClick={downloadTemplate} className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+              <FileSpreadsheet className="w-4 h-4" />
+              โหลดฟอร์ม Excel
+            </button>
+            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4" />
               นำเข้า Excel
             </button>
+
             <button 
               onClick={openAddModal}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"

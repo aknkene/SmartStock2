@@ -60,13 +60,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [demoStudents, setDemoStudents] = useState<Student[]>(mockStudents);
   const [demoProducts, setDemoProducts] = useState<Product[]>(mockProducts);
   const [demoTransactions, setDemoTransactions] = useState<Transaction[]>(mockTransactions);
-  const [stockHistory, setStockHistory] = useState<StockHistoryItem[]>(mockStockHistory);
+  const [demoStockHistory, setDemoStockHistory] = useState<StockHistoryItem[]>(mockStockHistory);
+  const [prodStockHistory, setProdStockHistory] = useState<StockHistoryItem[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>(mockSemesters);
   
   // Storage for Production mode (Empty initially, meant to be fetched from Google Sheets / Backend)
-  const [prodUsers, setProdUsers] = useState<User[]>(mockUsers);
-  const [prodStudents, setProdStudents] = useState<Student[]>(mockStudents);
-  const [prodProducts, setProdProducts] = useState<Product[]>(mockProducts);
+  const [prodUsers, setProdUsers] = useState<User[]>([mockUsers.find(u => u.username === "admin") || mockUsers[0]]);
+  const [prodStudents, setProdStudents] = useState<Student[]>([]);
+  const [prodProducts, setProdProducts] = useState<Product[]>([]);
   const [prodTransactions, setProdTransactions] = useState<Transaction[]>([]);
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -75,11 +76,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const users = mode === 'DEMO' ? demoUsers : prodUsers;
   const students = mode === 'DEMO' ? demoStudents : prodStudents;
   const products = mode === 'DEMO' ? demoProducts : prodProducts;
+  const stockHistory = mode === 'DEMO' ? demoStockHistory : prodStockHistory;
   const transactions = mode === 'DEMO' ? demoTransactions : prodTransactions;
 
   const currentSemester = semesters.find(s => s.isActive) || semesters[0];
 
   const setUsersState = mode === 'DEMO' ? setDemoUsers : setProdUsers;
+  const setStockHistoryState = mode === 'DEMO' ? setDemoStockHistory : setProdStockHistory;
   const setStudents = mode === 'DEMO' ? setDemoStudents : setProdStudents;
   const setProducts = mode === 'DEMO' ? setDemoProducts : setProdProducts;
   const setTransactions = mode === 'DEMO' ? setDemoTransactions : setProdTransactions;
@@ -288,7 +291,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         note: note.trim() ? note.trim() : undefined,
       };
 
-      setStockHistory((prev) => [historyItem!, ...prev]);
+      setStockHistoryState(prev => [historyItem!, ...prev]);
       logAction('UPDATE_PRODUCT_STOCK', `${historyItem.actionText} [${historyItem.productCode} - ${historyItem.productName}]`);
 
       // If stock increased, automatically record a STOCK_IN transaction so it links to the Reports page
@@ -358,7 +361,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         recorderName: currentUser?.name || 'ผู้ดูแลระบบ',
         note: 'สต๊อกเริ่มต้นตอนสร้างสินค้าใหม่',
       };
-      setStockHistory((prev) => [historyItem, ...prev]);
+      setStockHistoryState(prev => [historyItem, ...prev]);
     }
 
     logAction('ADD_PRODUCT', `เพิ่มสินค้าใหม่: ${productData.code} (สต๊อกเริ่มต้น ${initialQty} ชิ้น)`);
