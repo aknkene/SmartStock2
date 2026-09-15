@@ -276,27 +276,35 @@ export function Students() {
     setCart(prev => prev.filter(item => item.productId !== productId));
   };
 
-  const handleDistribute = () => {
+  const handleDistribute = async () => {
     if (editingStudentId && cart.length > 0) {
-      recordDistribution(editingStudentId, cart, distNote, distAttachment);
-      setCart([]);
-      setDistNote('');
-      setDistAttachment('');
-      alert('บันทึกการจ่ายสินค้าสำเร็จ');
-      setIsFormModalOpen(false);
+      try {
+        await recordDistribution(editingStudentId, cart, distNote, distAttachment);
+        setCart([]);
+        setDistNote('');
+        setDistAttachment('');
+        alert('บันทึกการจ่ายสินค้าสำเร็จ');
+        setIsFormModalOpen(false);
+      } catch (e: any) {
+        alert(e.message || "เกิดข้อผิดพลาดในการจ่ายสินค้า");
+      }
     }
   };
 
-  const handlePayment = (e: any) => {
+  const handlePayment = async (e: any) => {
     e.preventDefault();
     const amountVal = parseFloat(payAmount);
     if (editingStudentId && amountVal > 0) {
-      recordPayment(editingStudentId, amountVal, payNote, payAttachment);
-      setPayAmount('');
-      setPayNote('');
-      setPayAttachment('');
-      alert('บันทึกการชำระเงินสำเร็จ');
-      setIsFormModalOpen(false);
+      try {
+        await recordPayment(editingStudentId, amountVal, payNote, payAttachment);
+        setPayAmount('');
+        setPayNote('');
+        setPayAttachment('');
+        alert('บันทึกการชำระเงินสำเร็จ');
+        setIsFormModalOpen(false);
+      } catch (e: any) {
+        alert(e.message || "เกิดข้อผิดพลาดในการชำระเงิน");
+      }
     }
   };
 
