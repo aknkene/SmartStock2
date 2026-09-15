@@ -54,9 +54,23 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<AppMode>('PRODUCTION');
   const [language, setLanguage] = useState<Language>('TH');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [originalUser, setOriginalUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('school_inventory_user');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return null; }
+    }
+    return null;
+  });
+  const [originalUser, setOriginalUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('school_inventory_original_user');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return null; }
+    }
+    return null;
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem('school_inventory_user');
+  });
   
   // Storage for Demo mode
   const [demoUsers, setDemoUsers] = useState<User[]>(mockUsers);
@@ -163,6 +177,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCurrentUser(user);
       setOriginalUser(user);
       setIsAuthenticated(true);
+      localStorage.setItem('school_inventory_user', JSON.stringify(user));
+      localStorage.setItem('school_inventory_original_user', JSON.stringify(user));
       logAction('LOGIN', `เข้าสู่ระบบสำเร็จ: ${user.name} (${user.username})`);
       return true;
     }
@@ -180,6 +196,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (target) {
       setCurrentUser(target);
       setIsAuthenticated(true);
+      localStorage.setItem('school_inventory_user', JSON.stringify(target));
       logAction('SWITCH_ROLE', `สลับมุมมองผู้ใช้เป็น: ${target.name} [บทบาท: ${target.role}]`);
       return target;
     }
@@ -190,6 +207,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
     setOriginalUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem('school_inventory_user');
+    localStorage.removeItem('school_inventory_original_user');
   };
 
   const recordPayment = (studentId: string, amount: number, note: string, attachment?: string) => {
