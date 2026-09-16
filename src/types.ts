@@ -16,6 +16,8 @@ export interface User {
   managedRoom?: string;
   role: Role;
   status: 'ACTIVE' | 'SUSPENDED';
+  lastLoginAt?: any;
+  lastLogin?: string;
   lastLogin?: string;
   startDate?: string;
   endDate?: string;

@@ -1,6 +1,6 @@
 
 import { db } from '../firebase';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, runTransaction } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, Student, Product, Transaction, Role, AuditLog, StockHistoryItem, Semester } from '../types';
 import { mockUsers, mockStudents, mockProducts, mockTransactions, mockStockHistory, mockSemesters } from '../data/mock';
@@ -55,21 +55,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<AppMode>('PRODUCTION');
   const [language, setLanguage] = useState<Language>('TH');
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('school_inventory_user');
+    localStorage.removeItem('school_inventory_user');
+    const saved = sessionStorage.getItem('school_inventory_user');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return null; }
     }
     return null;
   });
   const [originalUser, setOriginalUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('school_inventory_original_user');
+    localStorage.removeItem('school_inventory_original_user');
+    const saved = sessionStorage.getItem('school_inventory_original_user');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return null; }
     }
     return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem('school_inventory_user');
+    return !!sessionStorage.getItem('school_inventory_user');
   });
   
   // Storage for Demo mode
@@ -177,8 +179,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCurrentUser(user);
       setOriginalUser(user);
       setIsAuthenticated(true);
-      localStorage.setItem('school_inventory_user', JSON.stringify(user));
-      localStorage.setItem('school_inventory_original_user', JSON.stringify(user));
+      sessionStorage.setItem('school_inventory_user', JSON.stringify(user));
+      sessionStorage.setItem('school_inventory_original_user', JSON.stringify(user));
+      if (mode === 'PRODUCTION') {
+        updateDoc(doc(db, 'users', user.id), { lastLoginAt: serverTimestamp() }).catch(e => console.error("Error updating last login", e));
+      }
       logAction('LOGIN', `เข้าสู่ระบบสำเร็จ: ${user.name} (${user.username})`);
       return true;
     }
@@ -196,7 +201,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (target) {
       setCurrentUser(target);
       setIsAuthenticated(true);
-      localStorage.setItem('school_inventory_user', JSON.stringify(target));
+      sessionStorage.setItem('school_inventory_user', JSON.stringify(target));
       logAction('SWITCH_ROLE', `สลับมุมมองผู้ใช้เป็น: ${target.name} [บทบาท: ${target.role}]`);
       return target;
     }
@@ -207,8 +212,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
     setOriginalUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('school_inventory_user');
-    localStorage.removeItem('school_inventory_original_user');
+    sessionStorage.removeItem('school_inventory_user');
+    sessionStorage.removeItem('school_inventory_original_user');
+    localStorage.removeItem('school_inventory_user'); // Safety cleanup
+    localStorage.removeItem('school_inventory_original_user'); // Safety cleanup
   };
 
   const recordPayment = async (studentId: string, amount: number, note: string, attachment?: string): Promise<void> => {
